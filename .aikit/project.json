@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "name": "nomoreclutter",
+  "test_command": "python -m unittest discover tests",
+  "gates": {},
+  "created": "2026-10-19",
+  "has_ui": true,
+  "ui_kind": "desktop",
+  "ui_evidence": [
+    "requirements.txt"
+  ],
+  "ui_checked_at": "2026-10-29",
+  "ui_source": "detected",
+  "topics": [
+    "aikit",
+    "aikit-integrated",
+    "source-available",
+    "aegean-license",
+    "commercial-license",
+    "ai",
+    "customtkinter",
+    "desktop-app",
+    "file-management",
+    "file-organizer",
+    "llm",
+    "local-llm",
+    "python",
+    "aegeanworks",
+    "desktop-application",
+    "gui",
+    "ai-assistant",
+    "local-ai",
+    "privacy",
+    "ai-tools"
+  ],
+  "topics_source": "ai:kilo:2026-10-27",
+  "topics_reviewed_at": "2026-10-28",
+  "license_topics": [
+    "source-available",
+    "aegean-license",
+    "commercial-license"
+  ]
+}

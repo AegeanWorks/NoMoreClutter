@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "name": "nomoreclutter",
+  "repo": "Nomoreclutter",
+  "has_ui": true,
+  "ui_kind": "desktop",
+  "palette": [
+    "#0b1015",
+    "#172431",
+    "#94a3b8",
+    "#38bdf8"
+  ],
+  "motif": "grid",
+  "layout": "left",
+  "assets": {
+    "logo": {
+      "path": "assets/logo.jpg",
+      "status": "approved",
+      "commit": "",
+      "generated_at": "2026-10-28T16:29:19",
+      "review": {
+        "status": "approved",
+        "reviewer": "subagent:vision-review",
+        "method": "vision",
+        "notes": "No More Clutter\nDESKTOP TOOL none",
+        "score": 85,
+        "reviewed_at": "2026-10-28T17:52:09"
+      }
+    },
+    "social_preview": {
+      "path": "assets/social-preview.png",
+      "status": "approved",
+      "commit": "",
+      "generated_at": "2026-10-28T17:41:03",
+      "review": {
+        "status": "approved",
+        "reviewer": "subagent:vision-review",
+        "method": "vision",
+        "notes": "No More Clutter DESKTOP TOOL",
+        "score": 93,
+        "reviewed_at": "2026-10-28T17:52:09"
+      }
+    }
+  },
+  "screenshots": [],
+  "model": "community/scriptsnsenses-sys/flux-2-dev-free"
+}
