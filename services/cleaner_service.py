@@ -34,6 +34,9 @@ class CleanerService:
             return True
         if lower.startswith("~$"):  # Temporary MS Office lock file
             return True
+        for ext in cls.OS_DEBRIS_EXTENSIONS:
+            if lower.endswith(ext):
+                return True
         return False
 
     @classmethod

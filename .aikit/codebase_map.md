@@ -10,7 +10,7 @@
 - **Total Classes**: `57`
 - **Total Top-Level Functions**: `25`
 - **Total Class Methods**: `425`
-- **Total Source Lines**: `11261`
+- **Total Source Lines**: `11264`
 
 ---
 
@@ -185,7 +185,7 @@
 ### [`services/cleaner_service.py`](services/cleaner_service.py)
 > *Orphan Folder & Junk Pruner Service (PRINCIPLE-003: Modularity, PRINCIPLE-007: Speed & Safety)*
 
-**Size**: `221` lines (`8484` bytes)
+**Size**: `224` lines (`8593` bytes)
 
 **Classes:**
 - `class CleanerService` - *Safely cleans empty folders, zero-byte artifacts, and system junk.*
