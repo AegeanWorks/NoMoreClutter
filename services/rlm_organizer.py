@@ -209,52 +209,61 @@ Respond ONLY with a valid JSON array of objects:
 
             if isinstance(parsed, list):
                 for item in parsed:
+                    if not isinstance(item, dict):
+                        continue
                     item_id = item.get("id")
-                    if item_id is not None and item_id in id_to_filepath:
-                        orig_path = id_to_filepath[item_id]
-                        visited_ids.add(item_id)
-                        
-                        folder_name = self._sanitize_folder_name(item.get("folder", "General"))
-                        
-                        # Deterministic AI rename setting enforcement
-                        if ai_rename:
-                            new_filename = self._sanitize_filename(item.get("name", os.path.basename(orig_path)), orig_path)
-                        else:
-                            new_filename = os.path.basename(orig_path)
+                    if isinstance(item_id, bool):
+                        continue
+                    if not isinstance(item_id, int):
+                        continue
+                    if item_id not in id_to_filepath:
+                        continue
+                    if item_id in visited_ids:
+                        continue
+                    orig_path = id_to_filepath[item_id]
+                    visited_ids.add(item_id)
 
-                        # Camera timestamp anti-hallucination guard for images without vision
-                        ext = os.path.splitext(orig_path)[1].lower()
-                        basename = os.path.basename(orig_path)
-                        stem = os.path.splitext(basename)[0]
-                        if ext in IMAGE_EXTENSIONS:
-                            date_match = re.search(r"(?:^|[^\d])(19\d{2}|20\d{2})[-_]?(0[1-9]|1[0-2])[-_]?(0[1-9]|[12]\d|3[01])(?:[-_]?\d{4,6})?", basename)
-                            year = date_match.group(1) if date_match else self._extract_image_year(orig_path)
-                            clean_tokens = [w.lower() for w in re.findall(r"[a-zA-Z]+", stem)]
-                            camera_prefixes = {"img", "dsc", "pano", "vid", "photo", "jpg", "jpeg", "png", "webp", "html", "fig", "article"}
-                            meaningful_tokens = [t for t in clean_tokens if t not in camera_prefixes and len(t) > 2]
-                            is_hex_or_numeric = bool(re.match(r"^[0-9a-fA-F_\-]+$", stem))
+                    folder_name = self._sanitize_folder_name(item.get("folder", "General"))
 
-                            hallucinated_tags = {"animals", "animal", "pets", "pet", "general", "other", "random", "misc", "untitled", "images", "photos"}
-                            if not meaningful_tokens or is_hex_or_numeric or folder_name.lower() in hallucinated_tags:
-                                folder_name = f"Photos/{year}" if year else "Photos"
-                            if not new_filename or any(new_filename.lower().startswith(p) for p in ["animal", "image", "photo_1", "photo_2"]):
-                                new_filename = basename
-                        
-                        # Preserve existing folder constraint if create_new_folders is False
-                        if not create_new_folders:
-                            if existing_folders:
-                                folder_name = self._match_closest_folder(folder_name, existing_folders)
-                                target_path = os.path.join(output_folder, folder_name, new_filename)
-                            else:
-                                target_path = os.path.join(output_folder, new_filename)
-                        else:
+                    # Deterministic AI rename setting enforcement
+                    if ai_rename:
+                        new_filename = self._sanitize_filename(item.get("name", os.path.basename(orig_path)), orig_path)
+                    else:
+                        new_filename = os.path.basename(orig_path)
+
+                    # Camera timestamp anti-hallucination guard for images without vision
+                    ext = os.path.splitext(orig_path)[1].lower()
+                    basename = os.path.basename(orig_path)
+                    stem = os.path.splitext(basename)[0]
+                    if ext in IMAGE_EXTENSIONS:
+                        date_match = re.search(r"(?:^|[^\d])(19\d{2}|20\d{2})[-_]?(0[1-9]|1[0-2])[-_]?(0[1-9]|[12]\d|3[01])(?:[-_]?\d{4,6})?", basename)
+                        year = date_match.group(1) if date_match else self._extract_image_year(orig_path)
+                        clean_tokens = [w.lower() for w in re.findall(r"[a-zA-Z]+", stem)]
+                        camera_prefixes = {"img", "dsc", "pano", "vid", "photo", "jpg", "jpeg", "png", "webp", "html", "fig", "article"}
+                        meaningful_tokens = [t for t in clean_tokens if t not in camera_prefixes and len(t) > 2]
+                        is_hex_or_numeric = bool(re.match(r"^[0-9a-fA-F_\-]+$", stem))
+
+                        hallucinated_tags = {"animals", "animal", "pets", "pet", "general", "other", "random", "misc", "untitled", "images", "photos"}
+                        if not meaningful_tokens or is_hex_or_numeric or folder_name.lower() in hallucinated_tags:
+                            folder_name = f"Photos/{year}" if year else "Photos"
+                        if not new_filename or any(new_filename.lower().startswith(p) for p in ["animal", "image", "photo_1", "photo_2"]):
+                            new_filename = basename
+
+                    # Preserve existing folder constraint if create_new_folders is False
+                    if not create_new_folders:
+                        if existing_folders:
+                            folder_name = self._match_closest_folder(folder_name, existing_folders)
                             target_path = os.path.join(output_folder, folder_name, new_filename)
+                        else:
+                            target_path = os.path.join(output_folder, new_filename)
+                    else:
+                        target_path = os.path.join(output_folder, folder_name, new_filename)
 
-                        changes.append(FileChange(
-                            original=orig_path,
-                            action="move",
-                            new_path=target_path
-                        ))
+                    changes.append(FileChange(
+                        original=orig_path,
+                        action="move",
+                        new_path=target_path
+                    ))
 
             # Defensive fallback for any files missed by the LLM
             for idx, orig_path in id_to_filepath.items():
@@ -449,9 +458,34 @@ Respond ONLY with a valid JSON array of objects:
 
     @staticmethod
     def _sanitize_folder_name(name: Any) -> str:
+        """Per-segment sanitize preserving a single Photos/YYYY-style hierarchy.
+
+        Allows at most one '/' separator (two segments). Extra segments are
+        folded into the second with '_'. Drops '', '.', '..', drive letters
+        and leading '/' so traversal can never escape output_folder.
+        """
         name_str = str(name if name is not None else "General").strip()
-        clean = re.sub(r'[<>:"/\\|?*]', '_', name_str).strip().strip('.')
-        return clean if clean else "General"
+        raw_parts = re.split(r"[/\\]+", name_str)
+        clean_parts: list = []
+        for part in raw_parts:
+            raw_stripped = part.strip().strip('.')
+            if not raw_stripped or raw_stripped in (".", ".."):
+                continue
+            if re.match(r"^[A-Za-z]:$", raw_stripped):
+                continue
+            clean = re.sub(r'[<>:"|?*]', '_', part).strip().strip('.')
+            if not clean or clean in (".", ".."):
+                continue
+            if re.match(r"^[A-Za-z]:$", clean) or re.match(r"^[A-Za-z]_$", clean):
+                continue
+            if not clean:
+                continue
+            clean_parts.append(clean)
+        if not clean_parts:
+            return "General"
+        if len(clean_parts) > 2:
+            clean_parts = [clean_parts[0], "_".join(clean_parts[1:])]
+        return "/".join(clean_parts[:2]) or "General"
 
     @staticmethod
     def _sanitize_filename(name: Any, original_path: str) -> str:

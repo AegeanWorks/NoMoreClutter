@@ -9,7 +9,7 @@
   "ui_evidence": [
     "requirements.txt"
   ],
-  "ui_checked_at": "2026-10-29",
+  "ui_checked_at": "2026-11-03",
   "ui_source": "detected",
   "topics": [
     "aikit",
@@ -39,5 +39,6 @@
     "source-available",
     "aegean-license",
     "commercial-license"
-  ]
+  ],
+  "ui_required": true
 }

@@ -9,8 +9,8 @@
 - **Total Python Modules**: `41`
 - **Total Classes**: `57`
 - **Total Top-Level Functions**: `25`
-- **Total Class Methods**: `420`
-- **Total Source Lines**: `11150`
+- **Total Class Methods**: `425`
+- **Total Source Lines**: `11261`
 
 ---
 
@@ -406,7 +406,7 @@
 ### [`services/rlm_organizer.py`](services/rlm_organizer.py)
 > *Recursive Language Model (RLM) File Organizer Engine*
 
-**Size**: `488` lines (`21747` bytes)
+**Size**: `522` lines (`22954` bytes)
 
 **Classes:**
 - `class RLMOrganizerError` - *Base exception for RLM Organizer operations.*
@@ -422,7 +422,7 @@
   - Method `._heuristic_fallback_batch(files, output_folder, existing_folders)` - *Pure Python rule-based classification when LLM is unreachable.*
   - Method `._apply_numbered_rename(changes)` - *Apply sequential numbering (1.jpg, 2.jpg) scoped per folder.*
   - Method `._match_closest_folder(target, existing_folders)` - *Find best match among existing directories.*
-  - Method `._sanitize_folder_name(name)`
+  - Method `._sanitize_folder_name(name)` - *Per-segment sanitize preserving a single Photos/YYYY-style hierarchy.*
   - Method `._sanitize_filename(name, original_path)`
   - Method `._extract_json(text)` - *Cleanly extract JSON payloads from markdown blocks or raw text.*
 
@@ -703,7 +703,7 @@
 ### [`tests/test_rlm_organizer.py`](tests/test_rlm_organizer.py)
 > *Unit tests for RLM Organizer (PRINCIPLE-001, PRINCIPLE-007, PRINCIPLE-009)*
 
-**Size**: `210` lines (`9754` bytes)
+**Size**: `287` lines (`13378` bytes)
 
 **Classes:**
 - `class MockProvider`
@@ -723,6 +723,11 @@
   - Method `.test_smart_image_folder_extraction()`
   - Method `.test_heuristic_fallback_batch_image_albums()`
   - Method `.test_sanitize_non_string_types()`
+  - Method `.test_sanitize_preserves_photos_hierarchy()`
+  - Method `.test_sanitize_blocks_traversal_and_depth()`
+  - Method `.test_analyze_cluster_duplicate_and_invalid_ids()`
+  - Method `.test_analyze_cluster_photos_hierarchy_end_to_end()`
+  - Method `.test_vision_photos_hierarchy_preserved()`
   - Method `.test_process_images_with_integer_json_fields()`
 
 ---
@@ -771,7 +776,7 @@
 ### [`ui/duplicate_finder.py`](ui/duplicate_finder.py)
 > *Smart Duplicate File Finder & Storage Reclaimer UI Dialog*
 
-**Size**: `756` lines (`30734` bytes)
+**Size**: `756` lines (`30724` bytes)
 
 **Classes:**
 - `class DuplicateFinderDialog` - *Interactive Duplicate File Finder & Storage Reclaimer.*

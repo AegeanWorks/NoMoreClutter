@@ -150,6 +150,13 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Decision**: Skip the dogfood harness tests unless `NOMORECLUTTER_GUI_TESTS=1`; keep `python scripts/dogfood_app.py` as the explicit interactive entry point. The default test gate stays headless.
 - **Consequences**: Gate runs never open windows; interactive UI verification remains available on demand. UI coverage is intentionally opt-in, consistent with ADR-019.
 
+### ADR-022: Hierarchical Folder Sanitization With Single-Slash Guard and Strict ID Validation
+- **Date**: 2026-11-02
+- **Status**: Accepted
+- **Context**: `_sanitize_folder_name` flattened `Photos/2017` to `Photos_2017`, diverging AI/vision output from heuristic `Photos/YYYY` albums; duplicate/out-of-range/non-int LLM IDs could double-move or drop files.
+- **Decision**: Per-segment sanitize allowing at most one `/` (extra depth folded with `_`), dropping `..`/`.`/drive/leading-slash; strict first-wins int-ID validation in `_analyze_cluster` with heuristic fallback for missed files; identical sanitize in text and vision paths.
+- **Consequences**: `Photos/YYYY` preserved end-to-end, traversal contained inside `output_folder`, wrong-AI-answer covered by persistent `FileExecutor` undo, offline fallback parity kept; cleaner/dedup permanent deletes and constrained-folder `existing[0]` fallback stay out of scope.
+
 ## Licensing migration (agpl-final)
 
 - New versions use the Aegean License 1.1 (AL-1.1); versions up to and including `agpl-final` remain under GNU AGPL-3.0.

@@ -181,6 +181,83 @@ class TestRLMOrganizer(unittest.TestCase):
         self.assertEqual(RLMOrganizer._sanitize_filename(142809, "/path/img.jpg"), "142809.jpg")
         self.assertEqual(RLMOrganizer._sanitize_filename(None, "/path/img.jpg"), "img.jpg")
 
+    def test_sanitize_preserves_photos_hierarchy(self):
+        self.assertEqual(RLMOrganizer._sanitize_folder_name("Photos/2017"), "Photos/2017")
+        self.assertEqual(RLMOrganizer._sanitize_folder_name("Photos\\2018"), "Photos/2018")
+        self.assertEqual(RLMOrganizer._sanitize_folder_name("Docs"), "Docs")
+
+    def test_sanitize_blocks_traversal_and_depth(self):
+        self.assertEqual(RLMOrganizer._sanitize_folder_name("../../etc"), "etc")
+        self.assertEqual(RLMOrganizer._sanitize_folder_name("/abs"), "abs")
+        self.assertEqual(RLMOrganizer._sanitize_folder_name("C:\\evil"), "evil")
+        self.assertEqual(RLMOrganizer._sanitize_folder_name("a/b/c"), "a/b_c")
+        self.assertEqual(RLMOrganizer._sanitize_folder_name(".."), "General")
+        self.assertEqual(RLMOrganizer._sanitize_folder_name(""), "General")
+
+    def test_analyze_cluster_duplicate_and_invalid_ids(self):
+        import os
+        mock_resp = (
+            '[{"id": 0, "folder": "Finance", "name": "first.pdf"}, '
+            '{"id": 0, "folder": "Other", "name": "second.pdf"}, '
+            '{"id": 99, "folder": "Nowhere", "name": "ghost.pdf"}, '
+            '{"id": "0", "folder": "Finance", "name": "string_id.pdf"}, '
+            '"not-a-dict", '
+            '{"folder": "NoId", "name": "noid.pdf"}]'
+        )
+        organizer = RLMOrganizer(provider=MockProvider(mock_resp))
+        files = ["/data/source/receipt.pdf", "/data/source/notes.txt"]
+        results = organizer.organize(
+            files=files,
+            model="test-model",
+            output_folder="/data/dest",
+            existing_folders=[],
+            create_new_folders=True,
+            ai_rename=True,
+        )
+        # id 0 first-wins once; id 1 missed by LLM falls back to heuristic Documents
+        self.assertEqual(len(results), 2)
+        by_orig = {r.original: r for r in results}
+        self.assertIn("Finance", os.path.normpath(by_orig["/data/source/receipt.pdf"].new_path))
+        self.assertIn("first.pdf", by_orig["/data/source/receipt.pdf"].new_path)
+        self.assertIn("Documents", os.path.normpath(by_orig["/data/source/notes.txt"].new_path))
+
+    def test_analyze_cluster_photos_hierarchy_end_to_end(self):
+        import os
+        mock_resp = '[{"id": 0, "folder": "Photos/2017", "name": "20170926_112101.jpg"}]'
+        organizer = RLMOrganizer(provider=MockProvider(mock_resp))
+        results = organizer.organize(
+            files=["/data/source/20170926_112101.jpg"],
+            model="test-model",
+            output_folder="/data/dest",
+            existing_folders=[],
+            create_new_folders=True,
+            ai_rename=True,
+        )
+        self.assertEqual(len(results), 1)
+        self.assertIn(os.path.normpath("Photos/2017"), os.path.normpath(results[0].new_path))
+
+    def test_vision_photos_hierarchy_preserved(self):
+        import os
+
+        class VisionPhotosProvider(MockProvider):
+            def analyze_image(self, image_path, prompt, model, max_tokens=150):
+                return '{"folder": "Photos/2019", "name": "sunset_beach"}'
+
+        organizer = RLMOrganizer(provider=VisionPhotosProvider(""))
+        results = organizer._process_images_hierarchical(
+            files=["/source/beach_sunset.jpg"],
+            model="mock",
+            output_folder="/dest",
+            existing_folders=[],
+            create_new_folders=True,
+            ai_rename=True,
+        )
+        self.assertEqual(len(results), 1)
+        self.assertEqual(
+            os.path.normpath(results[0].new_path),
+            os.path.normpath("/dest/Photos/2019/sunset_beach.jpg"),
+        )
+
     def test_process_images_with_integer_json_fields(self):
         class IntVisionProvider(BaseAIProvider):
             def __init__(self):
