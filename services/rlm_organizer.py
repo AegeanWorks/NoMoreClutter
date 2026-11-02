@@ -324,12 +324,34 @@ Respond ONLY with a valid JSON array of objects:
                     folder = self._sanitize_folder_name(raw_folder)
                     raw_name = str(parsed.get("name", "") if parsed.get("name") is not None else "").strip()
                     ext = os.path.splitext(img_path)[1].lower()
-                    
+
                     if ai_rename and raw_name:
                         clean_name = re.sub(r"[^\w\-_]", "_", raw_name).strip("_")
-                        new_filename = f"{clean_name}{ext}" if not clean_name.endswith(ext) else clean_name
+                        if not clean_name:
+                            new_filename = os.path.basename(img_path)
+                        else:
+                            new_filename = f"{clean_name}{ext}" if not clean_name.lower().endswith(ext) else clean_name
+                            # Enforce original extension (strip LLM-supplied swap).
+                            root, got = os.path.splitext(new_filename)
+                            if got.lower() != ext:
+                                new_filename = root + ext
                     else:
                         new_filename = os.path.basename(img_path)
+
+                    # Camera timestamp anti-hallucination guard (parity with text path).
+                    basename = os.path.basename(img_path)
+                    stem = os.path.splitext(basename)[0]
+                    date_match = re.search(r"(?:^|[^\d])(19\d{2}|20\d{2})[-_]?(0[1-9]|1[0-2])[-_]?(0[1-9]|[12]\d|3[01])(?:[-_]?\d{4,6})?", basename)
+                    year = date_match.group(1) if date_match else self._extract_image_year(img_path)
+                    clean_tokens = [w.lower() for w in re.findall(r"[a-zA-Z]+", stem)]
+                    camera_prefixes = {"img", "dsc", "pano", "vid", "photo", "jpg", "jpeg", "png", "webp", "html", "fig", "article"}
+                    meaningful_tokens = [t for t in clean_tokens if t not in camera_prefixes and len(t) > 2]
+                    is_hex_or_numeric = bool(re.match(r"^[0-9a-fA-F_\-]+$", stem))
+                    hallucinated_tags = {"animals", "animal", "pets", "pet", "general", "other", "random", "misc", "untitled", "images", "photos"}
+                    if not meaningful_tokens or is_hex_or_numeric or folder.lower() in hallucinated_tags:
+                        folder = f"Photos/{year}" if year else "Photos"
+                    if not new_filename or any(new_filename.lower().startswith(p) for p in ["animal", "image", "photo_1", "photo_2"]):
+                        new_filename = basename
                 else:
                     folder = self._get_smart_image_folder(img_path)
                     new_filename = os.path.basename(img_path)
@@ -444,17 +466,17 @@ Respond ONLY with a valid JSON array of objects:
 
     @staticmethod
     def _match_closest_folder(target: str, existing_folders: List[str]) -> str:
-        """Find best match among existing directories."""
+        """Find best match among existing directories (sanitized, never escapes)."""
         if not existing_folders:
-            return target
+            return RLMOrganizer._sanitize_folder_name(target)
         t_low = target.lower().strip()
         for f in existing_folders:
             if f.lower().strip() == t_low:
-                return f
+                return RLMOrganizer._sanitize_folder_name(f)
         for f in existing_folders:
             if t_low in f.lower() or f.lower() in t_low:
-                return f
-        return existing_folders[0]
+                return RLMOrganizer._sanitize_folder_name(f)
+        return RLMOrganizer._sanitize_folder_name(existing_folders[0])
 
     @staticmethod
     def _sanitize_folder_name(name: Any) -> str:
@@ -494,9 +516,14 @@ Respond ONLY with a valid JSON array of objects:
         clean = re.sub(r'[<>:"/\\|?*]', '_', name_str).strip()
         if not clean:
             return os.path.basename(original_path)
+        # Enforce original extension: LLM must not swap file type (e.g. .pdf -> .exe).
+        root, ext = os.path.splitext(clean)
+        if ext.lower() != orig_ext.lower():
+            base = root if ext else clean
+            clean = (base if base else os.path.splitext(os.path.basename(original_path))[0]) + orig_ext
         if not os.path.splitext(clean)[1]:
             clean += orig_ext
-        return clean
+        return clean if clean else os.path.basename(original_path)
 
     @staticmethod
     def _extract_json(text: Any) -> Any:

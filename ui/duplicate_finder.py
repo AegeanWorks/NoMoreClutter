@@ -416,7 +416,9 @@ class DuplicateFinderDialog(ctk.CTkToplevel):
         self.select_all_btn.configure(state="normal")
         self.deselect_btn.configure(state="normal")
 
-    def _load_more_cards(self, count: int = 25):
+    def _load_more_cards(self, count: int = None):
+        if count is None:
+            count = self.PAGE_SIZE
         if self._load_more_frame and self._load_more_frame.winfo_exists():
             self._load_more_frame.destroy()
             self._load_more_frame = None

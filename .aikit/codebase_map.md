@@ -10,14 +10,14 @@
 - **Total Classes**: `57`
 - **Total Top-Level Functions**: `25`
 - **Total Class Methods**: `425`
-- **Total Source Lines**: `11264`
+- **Total Source Lines**: `11314`
 
 ---
 
 ## 📦 Modules & Exported Symbols
 
 ### [`main.py`](main.py)
-**Size**: `2113` lines (`101233` bytes)
+**Size**: `2114` lines (`101261` bytes)
 
 **Classes:**
 - `class NoMoreClutterApp`
@@ -247,7 +247,7 @@
 ---
 
 ### [`services/file_scanner.py`](services/file_scanner.py)
-**Size**: `40` lines (`1408` bytes)
+**Size**: `47` lines (`1693` bytes)
 
 **Classes:**
 - `class FileScanner`
@@ -406,7 +406,7 @@
 ### [`services/rlm_organizer.py`](services/rlm_organizer.py)
 > *Recursive Language Model (RLM) File Organizer Engine*
 
-**Size**: `522` lines (`22954` bytes)
+**Size**: `549` lines (`25266` bytes)
 
 **Classes:**
 - `class RLMOrganizerError` - *Base exception for RLM Organizer operations.*
@@ -421,7 +421,7 @@
   - Method `.get_heuristic_category(file_path)` - *Instant zero-install heuristic categorization by file extension.*
   - Method `._heuristic_fallback_batch(files, output_folder, existing_folders)` - *Pure Python rule-based classification when LLM is unreachable.*
   - Method `._apply_numbered_rename(changes)` - *Apply sequential numbering (1.jpg, 2.jpg) scoped per folder.*
-  - Method `._match_closest_folder(target, existing_folders)` - *Find best match among existing directories.*
+  - Method `._match_closest_folder(target, existing_folders)` - *Find best match among existing directories (sanitized, never escapes).*
   - Method `._sanitize_folder_name(name)` - *Per-segment sanitize preserving a single Photos/YYYY-style hierarchy.*
   - Method `._sanitize_filename(name, original_path)`
   - Method `._extract_json(text)` - *Cleanly extract JSON payloads from markdown blocks or raw text.*
@@ -703,7 +703,7 @@
 ### [`tests/test_rlm_organizer.py`](tests/test_rlm_organizer.py)
 > *Unit tests for RLM Organizer (PRINCIPLE-001, PRINCIPLE-007, PRINCIPLE-009)*
 
-**Size**: `287` lines (`13378` bytes)
+**Size**: `289` lines (`13562` bytes)
 
 **Classes:**
 - `class MockProvider`
@@ -776,7 +776,7 @@
 ### [`ui/duplicate_finder.py`](ui/duplicate_finder.py)
 > *Smart Duplicate File Finder & Storage Reclaimer UI Dialog*
 
-**Size**: `756` lines (`30724` bytes)
+**Size**: `758` lines (`30787` bytes)
 
 **Classes:**
 - `class DuplicateFinderDialog` - *Interactive Duplicate File Finder & Storage Reclaimer.*
@@ -866,7 +866,7 @@
 ### [`ui/tree_preview.py`](ui/tree_preview.py)
 > *Interactive Tree Preview & Per-File Checkboxes (Pre-Execution Visualizer)*
 
-**Size**: `492` lines (`18841` bytes)
+**Size**: `503` lines (`19359` bytes)
 
 **Classes:**
 - `class TreePreviewDialog` - *Interactive visual tree preview dialog with hierarchical folder grouping and checkboxes.*

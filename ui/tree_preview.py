@@ -168,6 +168,8 @@ class TreePreviewDialog(ctk.CTkToplevel):
         self.scroll_tree.grid_columnconfigure(0, weight=1)
 
         self.file_row_widgets = []
+        self._obj_to_render_idx = {}
+        self._render_idx_to_change = {}
         change_idx = 0
 
         # Render folder clusters
@@ -220,6 +222,10 @@ class TreePreviewDialog(ctk.CTkToplevel):
             for c in folder_files:
                 var = ctk.BooleanVar(value=True)
                 self.file_vars[change_idx] = var
+                # Identity map: equality-based .index() fails on duplicate
+                # FileChange values and render order differs from input order.
+                self._obj_to_render_idx[id(c)] = change_idx
+                self._render_idx_to_change[change_idx] = c
 
                 row = ctk.CTkFrame(content_frame, fg_color="#1A1B1E", corner_radius=4, height=32)
                 row.pack(fill="x", pady=2)
@@ -355,15 +361,19 @@ class TreePreviewDialog(ctk.CTkToplevel):
         state = self.folder_vars[folder_name].get()
         folder_files = self.grouped_changes[folder_name]
         for c in folder_files:
-            idx = self.changes.index(c)
-            if idx in self.file_vars:
+            idx = self._obj_to_render_idx.get(id(c))
+            if idx is not None and idx in self.file_vars:
                 self.file_vars[idx].set(state)
         self._update_selection_counts()
 
     def _on_file_checkbox_toggled(self, folder_name: str):
         """Update parent folder checkbox state based on child file states."""
         folder_files = self.grouped_changes[folder_name]
-        indices = [self.changes.index(c) for c in folder_files]
+        indices = [
+            self._obj_to_render_idx.get(id(c))
+            for c in folder_files
+        ]
+        indices = [i for i in indices if i is not None]
         all_checked = all(self.file_vars[idx].get() for idx in indices if idx in self.file_vars)
         self.folder_vars[folder_name].set(all_checked)
         self._update_selection_counts()
@@ -484,8 +494,9 @@ class TreePreviewDialog(ctk.CTkToplevel):
     def _confirm_execution(self):
         """Extract checked files and dispatch to callback."""
         selected_changes = [
-            c for idx, c in enumerate(self.changes)
-            if self.file_vars.get(idx, ctk.BooleanVar(value=False)).get()
+            self._render_idx_to_change[idx]
+            for idx, var in self.file_vars.items()
+            if idx in self._render_idx_to_change and var.get()
         ]
         self.destroy()
         if self.on_confirm:

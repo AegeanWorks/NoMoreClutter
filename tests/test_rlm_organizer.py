@@ -280,7 +280,9 @@ class TestRLMOrganizer(unittest.TestCase):
         )
         import os
         self.assertEqual(len(results), 1)
-        self.assertEqual(os.path.normpath(results[0].new_path), os.path.normpath("/dest/2017/142809.jpg"))
+        # Vision/text parity: timestamp photo 20171026_142809.jpg routes to Photos/YYYY
+        # (camera guard), matching the text path and _get_smart_image_folder convention.
+        self.assertEqual(os.path.normpath(results[0].new_path), os.path.normpath("/dest/Photos/2017/142809.jpg"))
 
 
 if __name__ == "__main__":

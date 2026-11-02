@@ -9,6 +9,7 @@ import threading
 import time
 import webbrowser
 from tkinter import filedialog, messagebox
+from typing import Optional
 
 import customtkinter as ctk
 
