@@ -174,3 +174,11 @@ python scripts/dogfood_app.py
 ## 📜 License
 
 Free for personal use under the Aegean License 1.1 (AL-1.1); see [LICENSE](LICENSE). Any commercial use needs the Aegean Commercial License 1.0 (ACL-1.0); see [COMMERCIAL.md](COMMERCIAL.md).
+
+<!-- aegean:screenshots:start -->
+## Screenshots
+
+<a href="https://github.com/AegeanWorks/Nomoreclutter/commit/b9cb347"><img src="assets/screenshots/2026-11-03-main.png" alt="NoMoreClutter main window at 2026-11-03"></a>
+
+*commit `b9cb347` · 2026-11-03 · window 1356x919 · full app via PrintWindow (ADR-024)*
+<!-- aegean:screenshots:end -->
