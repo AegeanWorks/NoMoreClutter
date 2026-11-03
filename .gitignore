@@ -45,3 +45,5 @@ models/bin/
 # AIKit transient state
 node_modules/
 .aikit/reforge.reviews/
+# AIKit transient state
+.aikit/*.log

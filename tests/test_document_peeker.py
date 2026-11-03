@@ -50,6 +50,12 @@ class TestDocumentPeeker(unittest.TestCase):
         # Ensure newlines were sanitized into spaces
         self.assertNotIn("\n", peek)
 
+    def test_truncation_respects_max_chars_budget(self):
+        long_text = "x" * 300
+        out = DocumentPeeker._clean_and_truncate(long_text, max_chars=200)
+        self.assertLessEqual(len(out), 200)
+        self.assertTrue(out.endswith("..."))
+
     def test_code_file_peeking(self):
         file_path = os.path.join(self.root, "script.py")
         with open(file_path, "w", encoding="utf-8") as f:

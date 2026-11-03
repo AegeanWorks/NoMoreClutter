@@ -180,3 +180,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: No registered screenshots existed; the CustomTkinter window never takes focus from a headless launcher, so fullscreen grabs frame the IDE.
 - **Decision**: Register `2026-11-03-main.png` (`python main.py`, PrintWindow on the `NoMoreClutter` window, 1356x919, commit `b9cb347`) in `.aikit/media.json` and the README `aegean:screenshots` block. The single window is the whole UI, so one keeper is full coverage. No folders were selected and nothing was organized.
 - **Consequences**: README proves the current app. Reproduce with the launch plus PrintWindow helper above.
+
+### ADR-025: Peek truncation budget inclusive of ellipsis
+- **Date**: 2026-11-03
+- **Status**: Accepted
+- **Context**: Wave 20 audit (first-30 scope, `be16577` peeker) found `DocumentPeeker._clean_and_truncate` returned `text[:max_chars].rstrip()+"..."` (measured 203 chars for `max_chars=200`, 43 for 40), exceeding the ADR-007/`peek()` `max_chars` token budget.
+- **Decision**: Truncate to `text[:max_chars-3].rstrip()+"..."` (`max_chars<=3` returns `text[:max_chars]`); add `test_truncation_respects_max_chars_budget` failing-first (failed 203>200, passes after).
+- **Consequences**: Peek payloads stay within the documented per-file budget; existing `test_plain_text_peeking` still passes (40 chars, same prefix/ellipsis).

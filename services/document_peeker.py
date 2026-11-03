@@ -147,5 +147,7 @@ class DocumentPeeker:
         # Collapse multiple whitespace characters into single space
         text = re.sub(r"\s+", " ", text).strip()
         if len(text) > max_chars:
-            return text[:max_chars].rstrip() + "..."
+            if max_chars <= 3:
+                return text[:max_chars]
+            return text[:max_chars - 3].rstrip() + "..."
         return text

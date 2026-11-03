@@ -9,8 +9,8 @@
 - **Total Python Modules**: `41`
 - **Total Classes**: `57`
 - **Total Top-Level Functions**: `25`
-- **Total Class Methods**: `425`
-- **Total Source Lines**: `11314`
+- **Total Class Methods**: `426`
+- **Total Source Lines**: `11322`
 
 ---
 
@@ -214,7 +214,7 @@
 ### [`services/document_peeker.py`](services/document_peeker.py)
 > *Document Content Peeker (PRINCIPLE-007: Performance, PRINCIPLE-009: Token Frugality)*
 
-**Size**: `151` lines (`6086` bytes)
+**Size**: `153` lines (`6161` bytes)
 
 **Classes:**
 - `class DocumentPeeker` - *Safely extracts compact text snippets from documents for intelligent categorization.*
@@ -543,7 +543,7 @@
 ### [`tests/test_document_peeker.py`](tests/test_document_peeker.py)
 > *Unit tests for Document Content Peeker (PRINCIPLE-007, PRINCIPLE-009, PRINCIPLE-011)*
 
-**Size**: `122` lines (`4587` bytes)
+**Size**: `128` lines (`4839` bytes)
 
 **Classes:**
 - `class DummyProvider`
@@ -555,6 +555,7 @@
   - Method `.setUp()`
   - Method `.tearDown()`
   - Method `.test_plain_text_peeking()`
+  - Method `.test_truncation_respects_max_chars_budget()`
   - Method `.test_code_file_peeking()`
   - Method `.test_docx_peeking()`
   - Method `.test_pdf_peeking_uncompressed()`
